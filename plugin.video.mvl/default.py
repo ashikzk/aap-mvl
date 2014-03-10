@@ -514,8 +514,8 @@ def get_categories(id, page):
                 dp_created = False
                 dp_type = 'show'
                 
-                #sort categories according to release_date except for <Featured> group
-                if jsonObj[0]['parent_id'] not in ('372395', '372396'):
+                #sort categories according to release_date except for <Featured> group and TV shows
+                if jsonObj[0]['parent_id'] not in ('372395', '372396') and jsonObj[0]['top_level_parent'] != '3':
                     release_date_count = 0
                     for categories in jsonObj:
                         if 'release_date' not in categories:
@@ -783,7 +783,7 @@ def get_categories(id, page):
                         dp_created = True
                                   
                     done_count = done_count + 1
-                    dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+                    dp.update((done_count*100/item_count), str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
                     if dp.iscanceled():
                         break
@@ -877,33 +877,66 @@ def get_videos(id, thumbnail):
             opener = urllib2.build_opener()
             f = opener.open(req)
             content = f.read()
-            count = 0
             items = []
             plugin.log.info(jsonObj)
 
             # instruction text    
             items += [{
-                          'label': '[COLOR FF834DCC]Please click on a link below to begin viewing[/COLOR]',
+                          'label': '[COLOR FFFFFF00]Please click on a link below to begin viewing[/COLOR] [COLOR FFFF0000]* HD[/COLOR] [COLOR FFFFFFFF]sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed [COLOR FFFF0000]* Unusable sources[/COLOR] are replaced weekly[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
                           'is_playable': True
                       }]
 
+
+            src_list = ['movreel', 'mightyupload', 'promptfile', 'hugefile', 'billionupload', '180upload', 'lemupload', 'gorillavid']
+
             for urls in jsonObj:
-                count += 1
+                src_order = 0
+                for src in src_list:
+                    if urls['URL'].find(src) >= 0:
+                        break
+                    src_order += 1
+
+                urls['src_order'] = src_order
+
+            jsonObj.sort(key=lambda x: x['src_order'])
+
+            count = 0
+            hd_count = 0
+            for urls in jsonObj:
                 source_quality = ''
                 if urls['is_hd']:
                     source_quality = '*HD'
                     source_color = 'FFFF0000'
-                else:
+                    hd_count += 1
+
+                    if hd_count < 5:
+                        count += 1
+
+                        items += [{
+                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
+                                      'thumbnail': thumbnail,
+                                      'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
+                                      'is_playable': False,
+                                  }]
+
+            sd_count = 0
+            for urls in jsonObj:
+                source_quality = ''
+                if not urls['is_hd']:
                     source_quality = ''
                     source_color = 'FF834DCC'
+                    sd_count += 1
 
-                items += [{
-                              'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
-                              'thumbnail': thumbnail,
-                              'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
-                              'is_playable': False,
-                          }]
+                    if sd_count < 5:
+                        count += 1
+
+                        items += [{
+                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
+                                      'thumbnail': thumbnail,
+                                      'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
+                                      'is_playable': False,
+                                  }]
 
             hide_busy_dialog()
             return items
@@ -1237,7 +1270,7 @@ def search(category):
                             dp_created = True
                                   
                         done_count = done_count + 1
-                        dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+                        dp.update((done_count*100/item_count), str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
                         if dp.iscanceled():
                             break                                 
@@ -1523,7 +1556,7 @@ def get_azlist(key, page, category):
                         dp_created = True
                                   
                     done_count = done_count + 1
-                    dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+                    dp.update((done_count*100/item_count), str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
                     if dp.iscanceled():
                         break
@@ -1638,7 +1671,7 @@ def mostpopular(page, category):
                     dp_created = True
                               
                 done_count = done_count + 1
-                dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+                dp.update((done_count*100/item_count), str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
                 if dp.iscanceled():
                     break
