@@ -1055,14 +1055,17 @@ def login_check():
         myObj = json.loads(content)
         plugin.log.info(myObj)
 
+        # no need to check license for now
+        return True
+        
         #creating items from json object
-        for row in myObj:
-            if row['status'] == 1:
-                return True
-            else:
-                # xbmc.executebuiltin('Notification(License Limit Reached,' + row['message'] + ')')
-                showMessage('Error', 'License Limit Reached, '+ row['message'])
-                return False
+        # for row in myObj:
+        #     if row['status'] == 1:
+        #         return True
+        #     else:
+        #         # xbmc.executebuiltin('Notification(License Limit Reached,' + row['message'] + ')')
+        #         showMessage('Error', 'License Limit Reached for user '+username+', '+ row['message'])
+        #         return False
     except IOError:
         # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
         dialog_msg()
