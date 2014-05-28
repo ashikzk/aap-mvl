@@ -889,7 +889,8 @@ def get_videos(id, thumbnail):
 
 
             # src_list = ['movreel', 'mightyupload', 'promptfile', 'hugefile', 'billionupload', '180upload', 'lemupload', 'gorillavid']
-            src_list = ['firedrive', 'putlocker', 'movreel', 'promptfile', 'mightyupload', 'novamov', 'hugefile', 'billionupload', '180upload', 'lemupload', 'gorillavid']
+            # src_list = ['firedrive', 'putlocker', 'movreel', 'promptfile', 'mightyupload', 'novamov', 'hugefile', 'billionupload', '180upload', 'lemupload', 'gorillavid']
+            src_list = ['firedrive', 'putlocker', 'movreel', 'promptfile', 'mightyupload', 'novamov', 'nowvideo', 'lemupload', 'gorillavid']
 
             for urls in jsonObj:
                 src_order = 0
@@ -900,11 +901,18 @@ def get_videos(id, thumbnail):
 
                 urls['src_order'] = src_order
 
+                if urls['resolved_URL'] == '':
+                    urls['resolved_URL'] = 'NONE'
+
             jsonObj.sort(key=lambda x: x['src_order'])
 
             count = 0
             hd_count = 0
             for urls in jsonObj:
+                if urls['URL'].find('billionupload') >= 0 or urls['URL'].find('180upload') >= 0 or urls['URL'].find('hugefile') >= 0:
+                    #discard these 3 source for hd
+                    continue
+
                 source_quality = ''
                 if urls['is_hd']:
                     source_quality = '*HD'
@@ -923,6 +931,9 @@ def get_videos(id, thumbnail):
 
             sd_count = 0
             for urls in jsonObj:
+                if urls['resolved_URL'] == 'NONE' and urls['src_order'] == 0:
+                    continue
+
                 source_quality = ''
                 if not urls['is_hd']:
                     source_quality = ''
